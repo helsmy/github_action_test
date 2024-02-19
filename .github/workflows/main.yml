@@ -12,12 +12,60 @@ jobs:
       - name: install vsce
         shell: pwsh
         run: npm install -g @vscode/vsce
-      - name: build ahk test
-        uses: nukdokplex/autohotkey-build@v0.1
+      - name: "Download latest AutoHotkey release"
+        uses: "robinraju/release-downloader@v1.7"
         with:
-          version: v1.1.37.01
-          x64: true
-          x86: false
-          compression: upx
-          in: test.ahk
-          out: build
+          repository: AutoHotkey/AutoHotkey
+          latest: true
+          filename: "*.exe"
+          tarBall: false
+          zipBall: false
+          out-file-path: "._ahk/installer"
+      - name: Install AutoHotkey
+        shell: pwsh
+        run: |
+          $cwd = (Get-Location).Path
+          $ahk = "$cwd\._ahk"
+
+          Write-Output "Preparing installer..." 
+          Get-ChildItem -Path "$ahk\installer" -Filter *.exe -Recurse | ForEach-Object {
+            Move-Item -Path $_.FullName -Destination "$ahk\installer\installer.exe" -Force
+          }
+
+          Write-Output "Preparing AHK2Exe..."
+          Get-ChildItem -Path "$ahk\ahk2exe" -Filter *.zip | ForEach-Object {
+            Expand-Archive -Path $_.FullName -DestinationPath "$ahk\ahk2exe"
+          }
+          Get-ChildItem -Path "$ahk\ahk2exe" -Filter *.exe -Recurse | ForEach-Object {
+            Move-Item -Path $_.FullName -Destination "$ahk\ahk2exe\ahk2exe.exe" -Force
+          }
+
+          $ahkDist = "$ahk\installation"
+
+          Write-Output "Performing AHK v2.x install..."
+          Invoke-Expression "$ahk\installer\installer.exe /silent /installto $ahkDist"
+          # Add to Path
+          echo $ahkDist | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Output "AHK ${{ inputs.version }} installation completed!"
+      - name: Test Autohotkey
+        shell: pwsh
+        run: |
+          $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+          $pinfo.FileName = "AutoHotkey64.exe"
+          $pinfo.RedirectStandardError = $true
+          $pinfo.RedirectStandardOutput = $true
+          $pinfo.RedirectStandardInput  = $true
+          $pinfo.UseShellExecute = $false
+          $pinfo.Arguments = "/ErrorStdOut *"
+          $p = New-Object System.Diagnostics.Process
+          $p.StartInfo = $pinfo
+          $p.Start() | Out-Null
+          $pStdin = $p.StandardInput
+          $pStdin.WriteLine("FileAppend A_AhkVersion, '*'")
+          $pStdin.Close()
+          $p.WaitForExit()
+          $stdout = $p.StandardOutput.ReadToEnd()
+          $stderr = $p.StandardError.ReadToEnd()
+          Write-Output "stdout: $stdout"
+          Write-Output "stderr: $stderr"
+          Write-Output "exit code: " + $p.ExitCode
