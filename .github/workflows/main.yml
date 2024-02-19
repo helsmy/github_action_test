@@ -32,14 +32,6 @@ jobs:
             Move-Item -Path $_.FullName -Destination "$ahk\installer\installer.exe" -Force
           }
 
-          Write-Output "Preparing AHK2Exe..."
-          Get-ChildItem -Path "$ahk\ahk2exe" -Filter *.zip | ForEach-Object {
-            Expand-Archive -Path $_.FullName -DestinationPath "$ahk\ahk2exe"
-          }
-          Get-ChildItem -Path "$ahk\ahk2exe" -Filter *.exe -Recurse | ForEach-Object {
-            Move-Item -Path $_.FullName -Destination "$ahk\ahk2exe\ahk2exe.exe" -Force
-          }
-
           $ahkDist = "$ahk\installation"
 
           Write-Output "Performing AHK v2.x install..."
