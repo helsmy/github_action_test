@@ -2,7 +2,7 @@ on: workflow_dispatch
 jobs:   
   build_job:
     name: build env test
-    runs-on: windows-lastest
+    runs-on: windows-latest
     steps:
       - uses: actions/setup-node@v4.0.2
         with: 
