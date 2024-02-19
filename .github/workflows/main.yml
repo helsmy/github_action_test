@@ -4,12 +4,20 @@ jobs:
     name: build env test
     runs-on: windows-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - uses: actions/setup-node@v4.0.2
         with: 
           node-version: '20.x'
       - name: install vsce
         shell: pwsh
         run: npm install -g @vscode/vsce
-      - name: test vsce
-        shell: pwsh
-        run: vsce --version
+      - name: build ahk test
+        uses: nukdokplex/autohotkey-build@v0.1
+        with:
+          version: v1.1.37.01
+          x64: true
+          x86: false
+          compression: upx
+          in: test.ahk
+          out: build
