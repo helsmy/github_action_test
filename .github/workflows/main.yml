@@ -9,7 +9,7 @@ jobs:
           node-version: '20.x'
       - name: install vsce
         shell: pwsh
-        run: npm install -g vsce
+        run: npm install -g @vscode/vsce
       - name: test vsce
         shell: pwsh
         run: vsce --version
