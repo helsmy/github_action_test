@@ -37,7 +37,7 @@ jobs:
           Write-Output "Performing AHK v2.x install..."
           Invoke-Expression "$ahk\installer\installer.exe /silent /installto $ahkDist"
           # Add to Path
-          echo $ahkDist | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "$ahkDist\v2\" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           Write-Output "AHK ${{ inputs.version }} installation completed!"
       - name: Test Autohotkey
         shell: pwsh
